@@ -8,30 +8,49 @@ from PIL import Image, ImageTk
 import cv2
 
 
-# ============================================================
-# SQL PLACEHOLDERS
-# Put your finished SQL functions here later.
-# GUI code below does not touch your SQL connection.
-# ============================================================
+import mysql.connector
+
+# Set up your database connection credentials here
+DB_CONFIG = {
+    'host': 'localhost',     # <--- CHANGE THIS FROM 'dataret' to 'localhost'
+    'user': 'root',          # (Keep your actual MySQL username, usually 'root')
+    'password': '0101023',  # (Keep your actual MySQL password, leave blank '' if none)
+    'database': 'ImageDatabase' # (Make sure this matches the database you created)
+}
 
 def db_save_record(text_value: str, image_bytes: bytes, original_filename: str):
-    """
-    Connect this to your existing SQL INSERT code.
-    """
-    raise NotImplementedError("Connect this to your SQL INSERT function.")
-
+    """Inserts the text and image into the MySQL database."""
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cursor = conn.cursor()
+    
+    try:
+        # We only insert keyword, image_data, and filename now
+        sql = """INSERT INTO Images (keyword, image_data, filename) 
+                 VALUES (%s, %s, %s)"""
+        val = (text_value, image_bytes, original_filename)
+        
+        cursor.execute(sql, val)
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
 
 def db_get_image_by_text(text_value: str):
-    """
-    Connect this to your existing SQL SELECT code.
-
-    Expected return:
-        (image_bytes, filename)
-
-    If not found:
+    """Retrieves the image bytes and filename from MySQL using the keyword."""
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cursor = conn.cursor()
+    
+    try:
+        sql = "SELECT image_data, filename FROM Images WHERE keyword = %s"
+        cursor.execute(sql, (text_value,))
+        result = cursor.fetchone()
+        
+        if result:
+            return result[0], result[1]  # Returns (image_bytes, filename)
         return None
-    """
-    raise NotImplementedError("Connect this to your SQL SELECT function.")
+    finally:
+        cursor.close()
+        conn.close()
 
 
 # ============================================================
