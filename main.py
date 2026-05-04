@@ -6,25 +6,20 @@ import tempfile
 
 from PIL import Image, ImageTk
 import cv2
-
-
 import mysql.connector
 
-# Set up your database connection credentials here
 DB_CONFIG = {
-    'host': 'localhost',     # <--- CHANGE THIS FROM 'dataret' to 'localhost'
-    'user': 'root',          # (Keep your actual MySQL username, usually 'root')
-    'password': '0101023',  # (Keep your actual MySQL password, leave blank '' if none)
-    'database': 'ImageDatabase' # (Make sure this matches the database you created)
+    'host': 'localhost',   
+    'user': 'root',         
+    'password': '0101023',  
+    'database': 'AirlineDB' 
 }
 
 def db_save_record(text_value: str, image_bytes: bytes, original_filename: str):
-    """Inserts the text and image into the MySQL database."""
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor()
     
     try:
-        # We only insert keyword, image_data, and filename now
         sql = """INSERT INTO Images (keyword, image_data, filename) 
                  VALUES (%s, %s, %s)"""
         val = (text_value, image_bytes, original_filename)
@@ -36,7 +31,6 @@ def db_save_record(text_value: str, image_bytes: bytes, original_filename: str):
         conn.close()
 
 def db_get_image_by_text(text_value: str):
-    """Retrieves the image bytes and filename from MySQL using the keyword."""
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor()
     
@@ -46,7 +40,7 @@ def db_get_image_by_text(text_value: str):
         result = cursor.fetchone()
         
         if result:
-            return result[0], result[1]  # Returns (image_bytes, filename)
+            return result[0], result[1] 
         return None
     finally:
         cursor.close()
